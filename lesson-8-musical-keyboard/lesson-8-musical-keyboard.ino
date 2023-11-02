@@ -14,7 +14,8 @@ int switchState = 0;  // stores the state of the toggle button
 int note = 0;         // stores which note should be played
 int oldNote = 0;      // stores the previous note that was played
 
-// an array of notes with frequencies of middle C, D, E, F, G, A, B, and high C
+// an array of notes with frequencies of middle 
+//               C,   D,   E,   F,   G,   A,   B,  high C
 int notes[] = { 262, 294, 330, 349, 392, 440, 494, 523 };
 
 void setup() {
