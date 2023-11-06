@@ -18,6 +18,14 @@ class SerialPort:
         else:
             raise EnvironmentError('Machine Not pyserial Compatible')
 
+    def readLine(self):
+        # read Arduino serial data
+        ser_bytes = self.ser.readline()
+        # decode data to utf-8
+        decoded_bytes = ser_bytes.decode('utf-8')
+        # Remove all break lines characters
+        return (decoded_bytes.replace('\r','')).replace('\n','')
+
     def close(self):
 
         if self.ser is not None:
@@ -28,8 +36,6 @@ class SerialPort:
         logging.info("Connection Closed")
 
     def connect(self, baudrate=9600):
-
-        logging.info("Connecting")
 
         ports = self.search()
 
@@ -44,11 +50,13 @@ class SerialPort:
 
         port = answers["size"]
 
+        logging.info("Connecting")
+
         try:
             # match baud on Arduino
             self.ser = serial.Serial(port, baudrate=baudrate)
             self.ser.flush() # clear the port
-            print(self.ser.name)
+
             logging.info("Connected")
-        except:
-            raise EnvironmentError('Not possible to connect')
+        except serial.SerialException:
+            raise EnvironmentError('Not possible to connect. Maybe the port is been used')
