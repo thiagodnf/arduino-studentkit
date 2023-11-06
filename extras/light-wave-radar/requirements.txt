@@ -1,1 +1,2 @@
-tk > 
+tk >
+inquirer >= 3.1.3

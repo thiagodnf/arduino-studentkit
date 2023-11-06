@@ -6,6 +6,7 @@
 import tkinter
 import re
 import math
+import threading
 
 import numpy as np
 import matplotlib
@@ -17,7 +18,7 @@ import serial.tools.list_ports as COMs
 
 regex = r"Angle:(.*),Light Intensity:(.*),High:(.*),angleHigh:(.*),Low:(.*),angleLow:(.*)"
 
-ser = serial.Serial("/dev/cu.usbmodem213101",baudrate=9600) # match baud on Arduino
+ser = serial.Serial("/dev/cu.usbmodem21201",baudrate=9600) # match baud on Arduino
 ser.flush() # clear the port
 
 # init tk
@@ -34,14 +35,14 @@ servoAngle = 0
 def getDestination(angle, radius= 300):
     x = 300
     y = 300
-    
+
     angle = (angle+90) * math.pi / 180
-    
+
     startX = x
     startY = y
     endX   = x + radius * math.sin(angle)
     endY   = y + radius * math.cos(angle)
-    
+
     return startX, startY, endX, endY
 
 def drawCircle(x, y, radius):
@@ -51,67 +52,67 @@ def drawCircle(x, y, radius):
 
 def drawLine(startX, startY, endX, endY, fill, width):
     myCanvas.create_line(startX, startY, endX, endY, fill=fill, width=width)
-    
+
 def drawServoAngle():
     startX, startY, endX, endY = getDestination(servoAngle)
     drawLine(startX, startY, endX, endY, "white", 3)
-    
+
 def clearCanvas():
     myCanvas.delete('all')
-    
+
 def drawRadar():
     # draw arcs
     for dist in range(0, 300, 50):
         myCanvas.create_arc(0+dist, 0+dist, 600-dist, 600-dist, start=0, extent=180, fill="#2E6B6F")
-       
+
     for x in range(0, 180, 20):
         startX, startY, endX, endY = getDestination(x)
         drawLine(startX, startY, endX, endY, "white", 1)
-    
+
 def readData():
-    
+
     ser_bytes = ser.readline() # read Arduino serial data
     decoded_bytes = ser_bytes.decode('utf-8') # decode data to utf-8
     data = (decoded_bytes.replace('\r','')).replace('\n','')
-    
+
     print(data)
     matches = re.finditer(regex, data, re.MULTILINE)
-    
+
     for matchNum, match in enumerate(matches, start=1):
-    
+
         # print("Match {matchNum} was found at {start}-{end}: {match}".format(matchNum = matchNum, start = match.start(), end = match.end(), match = match.group()))
-        
+
         servoAngle = int(match.group(1))
-        
+
         # print(servoAngle)
         startX, startY, endX, endY = getDestination(servoAngle)
         drawLine(startX, startY, endX, endY, "red", 3)
-        
+
         if servoAngle <= 180:
             angles[servoAngle] = int(match.group(2))
 
 def update():
     clearCanvas()
-    
+
      # draw arcs
     drawRadar()
-    
+
     readData()
 
-    
-   
+
+
 
     # for light in lights:
     for i in range(len(angles)):
-        
+
         luminosity = np.interp(angles[i], [0, 1023],[0, 300])
-        
+
         startX, startY, endX, endY = getDestination(i, luminosity)
-  
+
         drawCircle(endX, endY, 2)
-        
-   
-        
+
+
+
     myCanvas.pack()
     # root.after(100, update)
 
@@ -124,7 +125,7 @@ def update():
 
 # def update
 # while True:
-    
+
 #     myCanvas.create_line(12, 12, 120, 120, fill="green", width=2)
 
 #     myCanvas.pack()
@@ -235,9 +236,9 @@ def update():
 # start_word,stop_bool,close_bool = False,False,False
 
 # def readData():
-    
+
     # while True:
-        
+
     # root.update()
 
     # try:
@@ -246,13 +247,13 @@ def update():
         #     if close_bool: # closes radar window
         #         plt.close('all')
         #     break
-        
+
         # ser_bytes = ser.readline() # read Arduino serial data
         # decoded_bytes = ser_bytes.decode('utf-8') # decode data to utf-8
         # data = (decoded_bytes.replace('\r','')).replace('\n','')
-        
+
         # print(data);
-        
+
         # if start_word:
         #     # vals = [float(ii) for ii in data.split(',')]
         #     vals = [20,40]
@@ -280,7 +281,7 @@ def update():
         #         # print('Radar Starting...')
         #     # else:
         #         # continue
-            
+
     # except KeyboardInterrupt:
     #     plt.close('all')
     #     print('Keyboard Interrupt')
@@ -296,7 +297,7 @@ myCanvas.pack()
 # root.mainloop()
 
 while True:
-    
+
     update()
-    
+
     root.update()
