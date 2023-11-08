@@ -1,22 +1,21 @@
 import tkinter
 import math
-from enum import Enum
+import numpy as np
 
 class Radar:
 
     def __init__(self) -> None:
 
-        self.events = {}
         self.winHeight = 300
         self.winWidth = 600
 
         self.radarSize = 500
 
-        self.refreshInterval = 10
+        self.data = [0] * 181
 
-        self.needleAngle = 45
-        self.needleSpeed = 10
-        self.needleDirection = 1
+        self.refreshInterval = 5
+
+        self.needleAngle = 0
 
         self.root = tkinter.Tk()
         self.root.title("Light Wave Radar")
@@ -28,9 +27,7 @@ class Radar:
         canvasWidth = 600
         self.myCanvas = tkinter.Canvas(self.root, height=canvasHeight, width=canvasWidth)
         self.myCanvas.configure(bg='black')
-
         self.myCanvas.pack()
-        # self.myCanvas.pack(fill="both", expand=True)
 
     def centralizeWindow(self):
 
@@ -111,11 +108,25 @@ class Radar:
 
         self.drawText(endX, endY, text, 0-(90-angle))
 
+    def drawCircleFromBottom(self, angle, radius):
+
+        cx, cy = self.getBottomDimensions()
+
+        endX, endY = self.getDestination(cx, cy, angle, radius)
+
+        self.drawCircle(endX, endY, 2)
+
     def clearCanvas(self):
         self.myCanvas.delete('all')
 
     def drawNeedle(self):
         self.drawLineFromBottom(self.needleAngle, self.radarSize / 2)
+
+    def drawData(self):
+
+        for i in range(len(self.data)):
+            luminosity = np.interp(self.data[i], [0, 1023],[0, self.radarSize / 2])
+            self.drawCircleFromBottom(i, luminosity)
 
     def update(self):
 
@@ -125,33 +136,19 @@ class Radar:
 
         self.drawNeedle()
 
+        self.drawData()
+
         self.root.after(self.refreshInterval, self.update)
-
-    def moveNeedle(self):
-
-        self.needleAngle += self.needleDirection
-
-        self.trigger("needleMoved", self.needleAngle)
-
-        if self.needleAngle >= 180:
-            self.needleDirection = -1
-        if self.needleAngle <= 0:
-            self.needleDirection = 1
-
-        self.root.after(self.needleSpeed, self.moveNeedle)
 
     def show(self):
         self.root.after(self.refreshInterval, self.update)
-        self.root.after(self.needleSpeed, self.moveNeedle)
         self.root.mainloop()
 
-    def on(self, eventName, callback):
+    def plot(self, angle:int, value:int):
 
-        if not eventName in self.events.keys():
-            self.events[eventName] = []
+        angle = max(angle, 0)
+        angle = min(angle, 180)
 
-        self.events[eventName].append(callback)
+        self.data[angle] = value
 
-    def trigger(self, eventName, args):
-        for callback in self.events[eventName]:
-            callback(args)
+        self.needleAngle = angle

@@ -1,6 +1,6 @@
 import serial, sys, glob
 import inquirer
-import logging
+from utils.Logger import Logger
 
 class SerialPort:
 
@@ -33,7 +33,7 @@ class SerialPort:
 
         self.ser = None
 
-        logging.info("Connection Closed")
+        Logger.info("Connection Closed")
 
     def connect(self, baudrate=9600):
 
@@ -50,13 +50,13 @@ class SerialPort:
 
         port = answers["size"]
 
-        logging.info("Connecting")
+        Logger.info("Connecting")
 
         try:
             # match baud on Arduino
             self.ser = serial.Serial(port, baudrate=baudrate)
             self.ser.flush() # clear the port
 
-            logging.info("Connected")
+            Logger.info("Connected")
         except serial.SerialException:
             raise EnvironmentError('Not possible to connect. Maybe the port is been used')
