@@ -5,7 +5,7 @@ Servo myServo; // create a servo object called myServo
 // name pins used in the circuit
 const int onButtonPin = 3;
 const int servoPin = 11;
-const int potPin = A0;
+const int potPin = A4;
 const int LEDPin = 9;
 
 // declare variable
