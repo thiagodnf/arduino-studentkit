@@ -59,6 +59,12 @@ void collectData() {
     lightLow = lightAmount;
     angleLow = servoAngle;
   }
+
+  if (lightAmount > 200) {
+    digitalWrite(LEDPin, HIGH);
+  } else {
+    digitalWrite(LEDPin, LOW);
+  }
 }
 
 void printData() {
